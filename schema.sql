@@ -1,19 +1,19 @@
--- department table
+DROP DATABASE IF EXISTS employee;
+CREATE DATABASE employee;
+USE employee;
 CREATE TABLE department (
-  id INT PRIMARY KEY AUTO_INCREMENT,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   name VARCHAR(30) NOT NULL
 );
 
--- role table
 CREATE TABLE role (
-  id INT PRIMARY KEY AUTO_INCREMENT,
+  id INT AUTO_INCREMENT PRIMARY KEY,
   title VARCHAR(30) NOT NULL,
-  salary DECIMAL(10, 2) NOT NULL,
+  salary DECIMAL,
   department_id INT,
   FOREIGN KEY (department_id) REFERENCES department(id)
 );
 
--- employee table
 CREATE TABLE employee (
   id INT PRIMARY KEY AUTO_INCREMENT,
   first_name VARCHAR(30) NOT NULL,

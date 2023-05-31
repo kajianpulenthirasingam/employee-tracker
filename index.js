@@ -1,5 +1,5 @@
 const inquirer = require("inquirer");
-const pool = require('./db/connections');
+const pool = require('./connections');
 
 function startApplication() {
   inquirer
@@ -117,134 +117,138 @@ async function addDepartment() {
 }
 
 async function addRole() {
-  try {
-    const departments = await pool.query('SELECT * FROM department');
-    const departmentChoices = departments.map((department) => ({
-      name: department.name,
-      value: department.id,
-    }));
-    const answer = await inquirer.prompt([
-      {
-        name: 'roleTitle',
-        type: 'input',
-        message: 'Enter the title of the role:',
-        validate: (value) => value !== '',
-      },
-      {
-        name: 'roleSalary',
-        type: 'input',
-        message: 'Enter the salary for the role:',
-        validate: (value) => !isNaN(value),
-      },
-      {
-        name: 'departmentId',
-        type: 'list',
-        message: 'Select the department for the role:',
-        choices: departmentChoices,
-      },
-    ]);
-    const [result] = await pool.query('INSERT INTO role SET ?', {
-      title: answer.roleTitle,
-      salary: answer.roleSalary,
-      department_id: answer.departmentId,
-    });
-    console.log('Role added successfully!');
-    startApplication();
-  } catch (error) {
-    console.error('Error adding role:', error);
-    startApplication();
+    try {
+      const departments = await pool.query('SELECT * FROM department');
+      const departmentChoices = departments[0].map((department) => ({
+        name: department.name,
+        value: department.id,
+      }));
+      const answer = await inquirer.prompt([
+        {
+          name: 'roleTitle',
+          type: 'input',
+          message: 'Enter the title of the role:',
+          validate: (value) => value !== '',
+        },
+        {
+          name: 'roleSalary',
+          type: 'input',
+          message: 'Enter the salary for the role:',
+          validate: (value) => !isNaN(value),
+        },
+        {
+          name: 'departmentId',
+          type: 'list',
+          message: 'Select the department for the role:',
+          choices: departmentChoices,
+        },
+      ]);
+      const [result] = await pool.query('INSERT INTO role SET ?', {
+        title: answer.roleTitle,
+        salary: answer.roleSalary,
+        department_id: answer.departmentId,
+      });
+      console.log('Role added successfully!');
+      startApplication();
+    } catch (error) {
+      console.error('Error adding role:', error);
+      startApplication();
+    }
   }
-}
+  
 
 async function addEmployee() {
-  try {
-    const roles = await pool.query('SELECT * FROM role');
-    const roleChoices = roles.map((role) => ({
-      name: role.title,
-      value: role.id,
-    }));
-    const employees = await pool.query('SELECT * FROM employee');
-    const employeeChoices = employees.map((employee) => ({
-      name: `${employee.first_name} ${employee.last_name}`,
-      value: employee.id,
-    }));
-    employeeChoices.unshift({ name: 'None', value: null });
-    const answer = await inquirer.prompt([
-      {
-        name: 'firstName',
-        type: 'input',
-        message: "Enter the employee's first name:",
-        validate: (value) => value !== '',
-      },
-      {
-        name: 'lastName',
-        type: 'input',
-        message: "Enter the employee's last name:",
-        validate: (value) => value !== '',
-      },
-      {
-        name: 'roleId',
-        type: 'list',
-        message: "Select the employee's role:",
-        choices: roleChoices,
-      },
-      {
-        name: 'managerId',
-        type: 'list',
-        message: "Select the employee's manager:",
-        choices: employeeChoices,
-      },
-    ]);
-    const [result] = await pool.query('INSERT INTO employee SET ?', {
-      first_name: answer.firstName,
-      last_name: answer.lastName,
-      role_id: answer.roleId,
-      manager_id: answer.managerId,
-    });
-    console.log('Employee added successfully!');
-    startApplication();
-  } catch (error) {
-    console.error('Error adding employee:', error);
-    startApplication();
+    try {
+      const roles = await pool.query('SELECT * FROM role');
+      const roleChoices = roles[0].map((role) => ({
+        name: role.title,
+        value: role.id,
+      }));
+      const employees = await pool.query('SELECT * FROM employee');
+      const employeeChoices = employees[0].map((employee) => ({
+        name: `${employee.first_name} ${employee.last_name}`,
+        value: employee.id,
+      }));
+      employeeChoices.unshift({ name: 'None', value: null });
+      const answer = await inquirer.prompt([
+        {
+          name: 'firstName',
+          type: 'input',
+          message: "Enter the employee's first name:",
+          validate: (value) => value !== '',
+        },
+        {
+          name: 'lastName',
+          type: 'input',
+          message: "Enter the employee's last name:",
+          validate: (value) => value !== '',
+        },
+        {
+          name: 'roleId',
+          type: 'list',
+          message: "Select the employee's role:",
+          choices: roleChoices,
+        },
+        {
+          name: 'managerId',
+          type: 'list',
+          message: "Select the employee's manager:",
+          choices: employeeChoices,
+        },
+      ]);
+      const [result] = await pool.query('INSERT INTO employee SET ?', {
+        first_name: answer.firstName,
+        last_name: answer.lastName,
+        role_id: answer.roleId,
+        manager_id: answer.managerId,
+      });
+      console.log('Employee added successfully!');
+      startApplication();
+    } catch (error) {
+      console.error('Error adding employee:', error);
+      startApplication();
+    }
   }
-}
+  
 
-async function updateEmployeeRole() {
-  try {
-    const employees = await pool.query('SELECT * FROM employee');
-    const employeeChoices = employees.map((employee) => ({
-      name: `${employee.first_name} ${employee.last_name}`,
-      value: employee.id,
-    }));
-    const roles = await pool.query('SELECT * FROM role');
-    const roleChoices = roles.map((role) => ({
-      name: role.title,
-      value: role.id,
-    }));
-    const answer = await inquirer.prompt([
-      {
-        name: 'employeeId',
-        type: 'list',
-        message: 'Select the employee to update:',
-        choices: employeeChoices,
-      },
-      {
-        name: 'roleId',
-        type: 'list',
-        message: 'Select the new role for the employee:',
-        choices: roleChoices,
-      },
-    ]);
-    await pool.query('UPDATE employee SET role_id = ? WHERE id = ?', [
-      answer.roleId,
-      answer.employeeId,
-    ]);
-    console.log('Employee role updated successfully!');
-    startApplication();
-  } catch (error) {
-    console.error('Error updating employee role:', error);
-    startApplication();
+  async function updateEmployeeRole() {
+    try {
+      const employees = await pool.query('SELECT * FROM employee');
+      const employeeChoices = employees[0].map((employee) => ({
+        name: `${employee.first_name} ${employee.last_name}`,
+        value: employee.id,
+      }));
+      const roles = await pool.query('SELECT * FROM role');
+      const roleChoices = roles[0].map((role) => ({
+        name: role.title,
+        value: role.id,
+      }));
+      const answer = await inquirer.prompt([
+        {
+          name: 'employeeId',
+          type: 'list',
+          message: 'Select the employee to update:',
+          choices: employeeChoices,
+        },
+        {
+          name: 'roleId',
+          type: 'list',
+          message: 'Select the new role for the employee:',
+          choices: roleChoices,
+        },
+      ]);
+      await pool.query('UPDATE employee SET role_id = ? WHERE id = ?', [
+        answer.roleId,
+        answer.employeeId,
+      ]);
+      console.log('Employee role updated successfully!');
+      startApplication();
+    } catch (error) {
+      console.error('Error updating employee role:', error);
+      startApplication();
+    }
   }
-}
+  
+
 
 startApplication(); // Start the application
